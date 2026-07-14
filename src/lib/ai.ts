@@ -29,8 +29,8 @@ function cleanAndParseResponse(rawResponse: string, fallbackSummary: string): AI
 
   try {
     const parsed = JSON.parse(cleaned);
-    let category = parsed.category;
-    let summary = parsed.summary;
+    const category = parsed.category;
+    const summary = parsed.summary;
 
     let finalCategory: AICategory = 'Other';
     if (typeof category === 'string') {
@@ -97,11 +97,29 @@ export async function categorizeAndSummarize(text: string): Promise<AIResult> {
         messages: [
           {
             role: 'system',
-            content: `You are an AI assistant that analyzes article text. You must return a strict JSON object with two fields:
-"category": must be exactly one of: "Tech", "Business", "Science", "Health", "Politics", "Culture", "Other".
-"summary": a 2-3 sentence summary of the article.
+            content: `You are an expert content classifier and summarizer. Your task is to analyze the provided article or text, classify it into exactly one of the allowed categories, and generate a concise 2-3 sentence summary.
 
-Do not wrap in any extra markdown or text outside the JSON object. Return JSON only.`
+## Allowed Categories & Guidelines:
+1. "Tech": Articles focusing on digital technologies, software, hardware, programming, artificial intelligence, the internet, cybersecurity, digital networks, consumer electronics, and the societal or developmental impact of digital technologies/advances.
+2. "Business": Articles covering finance, economics, corporate affairs, startups, markets, trade, commerce, marketing, and business leadership.
+3. "Science": Articles on physics, biology, chemistry, astronomy, space exploration, geology, climatology/environmental research, mathematics, and formal academic research discoveries.
+4. "Health": Articles focusing on medicine, public health, healthcare policy, wellness, mental health, fitness, nutrition, diseases, and medical science.
+5. "Politics": Articles about governments, elections, public policy, legislation, law, geopolitical relations, and civic issues.
+6. "Culture": Articles discussing arts, literature, entertainment, music, cinema, history, sports, lifestyle, philosophy, and societal trends.
+7. "Other": Content that does not clearly fit into any of the above categories (e.g., personal logs, recipes, announcements, or generic tutorials).
+
+## Classification Rules:
+- If a text overlaps across multiple categories (e.g., the policy or social impact of technology/digital advances), prefer the category that represents the primary subject (e.g., prioritize "Tech" if digital technology is the central theme).
+- You must output exactly one of the allowed categories: "Tech", "Business", "Science", "Health", "Politics", "Culture", "Other". Do not use any other labels.
+
+## Output Format:
+You must return a raw, valid JSON object containing exactly these two keys:
+{
+  "category": "<One of the allowed categories>",
+  "summary": "<A clear, concise, objective 2-3 sentence summary of the article content. Do not include any promotional or first-person language.>"
+}
+
+Do not wrap the JSON in markdown code blocks (e.g., do not use \`\`\`json) or include any other text outside of the JSON object.`
           },
           {
             role: 'user',
