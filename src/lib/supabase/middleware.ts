@@ -35,9 +35,10 @@ export async function updateSession(request: NextRequest) {
   const url = request.nextUrl.clone()
   const isLoginPage = url.pathname === '/login'
   const isAuthCallback = url.pathname.startsWith('/api/auth')
+  const isInngestRoute = url.pathname.startsWith('/api/inngest')
   const isRootPage = url.pathname === '/'
 
-  const isPublicRoute = isRootPage || isLoginPage || isAuthCallback
+  const isPublicRoute = isRootPage || isLoginPage || isAuthCallback || isInngestRoute
 
   // Redirect unauthenticated users to /login
   if (!user && !isPublicRoute) {

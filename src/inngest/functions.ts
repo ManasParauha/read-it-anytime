@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { safeFetch } from '@/lib/ssrf'
 import { JSDOM } from 'jsdom'
 import { Readability } from '@mozilla/readability'
+import { categorizeAndSummarize } from '@/lib/ai'
 
 export function getWeekStart(date: Date = new Date()): Date {
   const d = new Date(date)
@@ -69,6 +70,13 @@ export const scrapeLink = inngest.createFunction(
         return { title, cleanedText }
       })
 
+      // Categorize and summarize the clean text with AI
+      const aiResult = await step.run('categorize-and-summarize', async () => {
+        // Truncate to first 6000 characters to control costs
+        const truncatedText = parseResult.cleanedText ? parseResult.cleanedText.substring(0, 6000) : ''
+        return await categorizeAndSummarize(truncatedText)
+      })
+
       // Update link with parsed results and increment user's weekly usage limit
       await step.run('save-success', async () => {
         await db.link.update({
@@ -77,6 +85,8 @@ export const scrapeLink = inngest.createFunction(
             status: 'DONE',
             title: parseResult.title,
             cleanedText: parseResult.cleanedText,
+            category: aiResult.category,
+            summary: aiResult.summary,
           },
         })
 

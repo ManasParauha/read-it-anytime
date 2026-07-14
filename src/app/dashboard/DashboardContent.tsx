@@ -199,7 +199,12 @@ export function DashboardContent({ initialLinks, userEmail }: DashboardContentPr
                         {link.url}
                       </a>
                     </div>
-                    <div>
+                    <div className="flex items-center gap-2">
+                      {link.category && (
+                        <span className="border border-hairline text-body bg-canvas/40 px-2 py-0.5 rounded-sm font-mono text-[10px] tracking-wider uppercase">
+                          {link.category}
+                        </span>
+                      )}
                       {link.status === 'PENDING' && (
                         <span className="border border-dashed border-hairline text-mute bg-canvas/30 px-2 py-0.5 rounded-sm font-mono text-[10px] tracking-wider">
                           PENDING
@@ -231,7 +236,11 @@ export function DashboardContent({ initialLinks, userEmail }: DashboardContentPr
                         <h4 className="text-md font-medium text-ink font-sans tracking-tight leading-snug">
                           {link.title || 'Untitled Article'}
                         </h4>
-                        {link.cleanedText ? (
+                        {link.summary ? (
+                          <p className="text-xs text-body leading-relaxed">
+                            {link.summary}
+                          </p>
+                        ) : link.cleanedText ? (
                           <p className="text-xs text-body leading-relaxed line-clamp-3">
                             {link.cleanedText}
                           </p>
