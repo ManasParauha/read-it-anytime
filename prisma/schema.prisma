@@ -30,10 +30,11 @@ model Link {
   url         String
   title       String?
   cleanedText String?
-  category    String?
-  summary     String?
-  status      LinkStatus @default(PENDING)
-  createdAt   DateTime   @default(now())
+  category      String?
+  summary       String?
+  failureReason String?
+  status        LinkStatus @default(PENDING)
+  createdAt     DateTime   @default(now())
 
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

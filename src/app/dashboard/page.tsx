@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { db } from '@/lib/db'
 import { SignOutButton } from './SignOutButton'
+import { DashboardContent } from './DashboardContent'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -12,6 +14,28 @@ export default async function DashboardPage() {
   if (!user) {
     redirect('/login')
   }
+
+  // Ensure user row exists in public."User" table
+  await db.user.upsert({
+    where: { id: user.id },
+    update: {},
+    create: {
+      id: user.id,
+      email: user.email!,
+    },
+  })
+
+  // Fetch initial links for server rendering
+  const initialLinks = await db.link.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // Format type compatibility (Date to string serialization)
+  const serializedLinks = initialLinks.map((link) => ({
+    ...link,
+    createdAt: link.createdAt.toISOString(),
+  }))
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas px-6 py-12 font-sans md:px-12">
@@ -34,29 +58,8 @@ export default async function DashboardPage() {
       </header>
 
       {/* Main dashboard content */}
-      <main className="flex flex-1 flex-col justify-center py-12 max-w-4xl mx-auto w-full space-y-8">
-        <div className="rounded-md border border-hairline bg-canvas-soft p-8 space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-normal text-ink">Welcome back.</h2>
-            <p className="text-sm text-mute">
-              Your link curation dashboard is successfully set up and authenticated with Supabase.
-            </p>
-          </div>
-
-          <div className="border-t border-hairline pt-6 space-y-4">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-body-strong">Active Session Credentials</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-canvas p-4 rounded-xs border border-hairline font-mono text-xs text-body space-y-1">
-                <span className="text-mute block">USER ID</span>
-                <span className="text-ink break-all">{user.id}</span>
-              </div>
-              <div className="bg-canvas p-4 rounded-xs border border-hairline font-mono text-xs text-body space-y-1">
-                <span className="text-mute block">PROVIDER</span>
-                <span className="text-ink">Google OAuth</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <main className="flex flex-1 flex-col py-12 max-w-4xl mx-auto w-full">
+        <DashboardContent initialLinks={serializedLinks} userEmail={user.email} />
       </main>
 
       {/* Footer */}
