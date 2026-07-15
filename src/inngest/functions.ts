@@ -155,7 +155,7 @@ export const weeklyDigestCron = inngest.createFunction(
           email: true,
         },
       })
-    })
+    }) as Array<{ id: string; email: string }>
 
     if (users.length === 0) {
       return { message: 'No eligible users for weekly digest' }
@@ -214,7 +214,13 @@ export const sendUserDigest = inngest.createFunction(
           createdAt: 'desc',
         },
       })
-    })
+    }) as Array<{
+      id: string
+      url: string
+      title: string | null
+      summary: string | null
+      category: string | null
+    }>
 
     if (links.length === 0) {
       return { message: `No qualifying links for user ${userId}, skipping digest.` }

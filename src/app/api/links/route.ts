@@ -4,6 +4,15 @@ import { db } from '@/lib/db'
 import { inngest } from '@/lib/inngest'
 import { isUrlSafe } from '@/lib/ssrf'
 import { getWeekStart } from '@/inngest/functions'
+import { Ratelimit } from '@upstash/ratelimit'
+import { redis } from '@/lib/redis'
+
+const linksRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '60 s'),
+  analytics: true,
+  prefix: 'ratelimit:links',
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +25,29 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Rate Limiting: 10 requests per minute per user
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      try {
+        const { success, limit, reset, remaining } = await linksRateLimit.limit(user.id)
+        if (!success) {
+          return Response.json(
+            { error: 'Too many requests. You are limited to 10 submissions per minute.' },
+            {
+              status: 429,
+              headers: {
+                'X-RateLimit-Limit': limit.toString(),
+                'X-RateLimit-Remaining': remaining.toString(),
+                'X-RateLimit-Reset': reset.toString(),
+              },
+            }
+          )
+        }
+      } catch (err) {
+        console.error('Rate limiting error in links:', err)
+      }
+    }
+
 
     // Ensure user row exists in public."User" table (self-healing for out-of-sync auth states)
     await db.user.upsert({
