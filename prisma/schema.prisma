@@ -25,16 +25,17 @@ model User {
 }
 
 model Link {
-  id          String     @id @default(uuid()) @db.Uuid
-  userId      String     @db.Uuid
-  url         String
-  title       String?
-  cleanedText String?
+  id            String     @id @default(uuid()) @db.Uuid
+  userId        String     @db.Uuid
+  url           String
+  title         String?
+  cleanedText   String?
   category      String?
   summary       String?
   failureReason String?
   status        LinkStatus @default(PENDING)
   createdAt     DateTime   @default(now())
+  digestedAt    DateTime?
 
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
