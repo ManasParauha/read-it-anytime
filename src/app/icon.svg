@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background -->
+  <rect width="512" height="512" rx="128" fill="#2b2622"/>
+  
+  <!-- Hourglass Frame -->
+  <!-- Top Bar -->
+  <line x1="140" y1="110" x2="372" y2="110" stroke="#f7f5f0" stroke-width="20" stroke-linecap="round"/>
+  <!-- Bottom Bar -->
+  <line x1="140" y1="402" x2="372" y2="402" stroke="#f7f5f0" stroke-width="20" stroke-linecap="round"/>
+  
+  <!-- Left Side Curvature (Bezier curve) -->
+  <path d="M160 110 C230 200 230 312 160 402" stroke="#f7f5f0" stroke-width="20" stroke-linecap="round" fill="none"/>
+  <!-- Right Side Curvature (Bezier curve) -->
+  <path d="M352 110 C282 200 282 312 352 402" stroke="#f7f5f0" stroke-width="20" stroke-linecap="round" fill="none"/>
+  
+  <!-- Top Book (falling sand) -->
+  <path d="M256 160 C230 145 200 135 174 140 V200 C200 195 230 205 256 220 C282 205 312 195 338 200 V140 C312 135 282 145 256 160 Z" fill="#f7f5f0"/>
+  <!-- Spine crease line of top book in background color -->
+  <path d="M256 160 V220" stroke="#2b2622" stroke-width="6"/>
+  
+  <!-- Falling Sand stream -->
+  <line x1="256" y1="230" x2="256" y2="280" stroke="#f7f5f0" stroke-width="8" stroke-linecap="round" stroke-dasharray="1 16"/>
+  
+  <!-- Bottom Book (accumulated sand / read items) -->
+  <path d="M256 310 C230 295 200 285 174 290 V350 C200 345 230 355 256 370 C282 355 312 345 338 350 V290 C312 285 282 295 256 310 Z" fill="#f7f5f0"/>
+  <!-- Spine crease line of bottom book in background color -->
+  <path d="M256 310 V370" stroke="#2b2622" stroke-width="6"/>
+</svg>
