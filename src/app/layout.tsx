@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Instrument_Serif, DM_Mono } from "next/font/google";
+import { APP_NAME } from "@/lib/config";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,7 +21,7 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Read It Anytime",
+  title: APP_NAME,
   description: "Your personalized weekly link digests, simplified.",
 };
 

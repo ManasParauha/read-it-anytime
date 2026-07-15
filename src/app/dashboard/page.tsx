@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { db } from '@/lib/db'
 import { SignOutButton } from './SignOutButton'
 import { DashboardContent } from './DashboardContent'
+import { Footer } from '@/components/Footer'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -90,9 +91,7 @@ export default async function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-hairline pt-6 text-center text-xs text-mute font-mono mt-auto">
-        WARP DESIGN MODE // SYSTEM STATE READY
-      </footer>
+      <Footer variant="dashboard" />
     </div>
   )
 }
