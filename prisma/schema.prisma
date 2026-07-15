@@ -37,7 +37,13 @@ model Link {
   createdAt     DateTime   @default(now())
   digestedAt    DateTime?
 
+  archived      Boolean    @default(false)
+  readAt        DateTime?
+
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, category])
 }
 
 model Usage {

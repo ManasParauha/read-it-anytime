@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Authenticate Supabase user
     const supabase = await createClient()
@@ -152,13 +152,89 @@ export async function GET() {
       },
     })
 
-    // Fetch user's links
-    const links = await db.link.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    })
+    // Parse query parameters
+    const searchParams = request.nextUrl.searchParams
+    const search = searchParams.get('search') || undefined
+    const category = searchParams.get('category') || undefined
+    const status = searchParams.get('status') || undefined
+    const archivedParam = searchParams.get('archived')
+    const archived = archivedParam === 'true' // defaults to false if omitted
+    const sort = searchParams.get('sort') || 'newest'
+    const cursor = searchParams.get('cursor') || undefined
+    const limit = parseInt(searchParams.get('limit') || '20', 10)
 
-    return Response.json(links)
+    // Build the query where clause using AND conditions to combine filters cleanly
+    const andConditions: any[] = [
+      { userId: user.id },
+      { archived: archived }
+    ]
+
+    if (search) {
+      andConditions.push({
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { summary: { contains: search, mode: 'insensitive' } },
+          { url: { contains: search, mode: 'insensitive' } },
+        ]
+      })
+    }
+
+    if (category) {
+      const categories = category.split(',').map((c) => c.trim()).filter(Boolean)
+      if (categories.length > 0) {
+        andConditions.push({
+          OR: categories.map((cat) => ({
+            category: { equals: cat, mode: 'insensitive' }
+          }))
+        })
+      }
+    }
+
+    if (status) {
+      andConditions.push({ status })
+    }
+
+    const whereClause = {
+      AND: andConditions
+    }
+
+    // Build the order by clause
+    let orderBy: any = [{ createdAt: 'desc' }, { id: 'desc' }]
+    if (sort === 'oldest') {
+      orderBy = [{ createdAt: 'asc' }, { id: 'asc' }]
+    } else if (sort === 'category') {
+      orderBy = [
+        { category: 'asc' },
+        { createdAt: 'desc' },
+        { id: 'desc' }
+      ]
+    }
+
+    // Build Prisma query options
+    const queryOptions: any = {
+      where: whereClause,
+      orderBy: orderBy,
+      take: limit + 1, // fetch one extra to see if there is a next page
+    }
+
+    if (cursor) {
+      queryOptions.cursor = { id: cursor }
+      queryOptions.skip = 1 // skip the cursor record itself
+    }
+
+    const links = await db.link.findMany(queryOptions)
+
+    let nextCursor: string | null = null
+    if (links.length > limit) {
+      const nextItem = links[limit]
+      nextCursor = nextItem.id
+      links.pop() // remove the extra item
+    }
+
+    return Response.json({
+      links,
+      nextCursor,
+    })
 
   } catch (error: any) {
     console.error('Error fetching links:', error)

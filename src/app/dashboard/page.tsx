@@ -27,14 +27,36 @@ export default async function DashboardPage() {
 
   // Fetch initial links for server rendering
   const initialLinks = await db.link.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' },
+    where: { userId: user.id, archived: false },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: 21,
   })
+
+  let nextCursor: string | null = null
+  if (initialLinks.length > 20) {
+    nextCursor = initialLinks[20].id
+    initialLinks.pop()
+  }
+
+  // Fetch all unique categories of the user for filter rendering
+  const userLinksCategories = await db.link.findMany({
+    where: { userId: user.id },
+    select: { category: true },
+  })
+  const userCategories = Array.from(
+    new Set(
+      userLinksCategories
+        .map((l) => l.category?.toLowerCase())
+        .filter(Boolean) as string[]
+    )
+  )
 
   // Format type compatibility (Date to string serialization)
   const serializedLinks = initialLinks.map((link) => ({
     ...link,
     createdAt: link.createdAt.toISOString(),
+    readAt: link.readAt ? link.readAt.toISOString() : null,
+    digestedAt: link.digestedAt ? link.digestedAt.toISOString() : null,
   }))
 
   return (
@@ -59,7 +81,12 @@ export default async function DashboardPage() {
 
       {/* Main dashboard content */}
       <main className="flex flex-1 flex-col py-12 max-w-4xl mx-auto w-full">
-        <DashboardContent initialLinks={serializedLinks} userEmail={user.email} />
+        <DashboardContent
+          initialLinks={serializedLinks}
+          initialNextCursor={nextCursor}
+          userEmail={user.email}
+          userCategories={userCategories}
+        />
       </main>
 
       {/* Footer */}
