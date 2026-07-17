@@ -2,8 +2,8 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
-// Prefer DIRECT_URL to connect directly to the database and bypass Supabase pooler routing issues
-const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL
+// Prefer DATABASE_URL (connection pooler) for serverless execution, fall back to DIRECT_URL
+const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL
 const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool)
 
